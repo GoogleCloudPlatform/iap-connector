@@ -1,0 +1,79 @@
+# Copyright 2019 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+info:
+  title: GKE cluster
+  author: Google, Inc.
+  description: |
+    Creates a IAP connector k8s cluster, with an ingress controller to forward
+    traffic to each service for routing.
+
+required:
+- zone
+- serviceAccountName
+- imageVersion
+- replicas
+- routing
+- tls
+
+properties:
+  zone:
+    type: string
+    description: Zone in which the cluster should run.
+  initialNodeCount:
+    type: integer
+    description: Initial number of nodes desired in the cluster.
+    default: 3
+  serviceAccountName:
+    type: string
+    description: Service account name in the project, which is used by deployment manger to create Kubernetes resources.
+  imageVersion:
+    type: string
+    description: Ambassador image version to run.
+    default: 0.39.0
+  replicas:
+    type: integer
+    description: Initial number of replica for ambassador deployment.
+    default: 3
+  routing:
+    type: array
+    description: Routing maps
+    items:
+      type: object
+      required:
+      - name
+      - mapping
+      properties:
+        name:
+          type: string
+          description: Name for the backend service.
+        mapping:
+          type: array
+          required:
+          - name
+          - source
+          - destination
+          properties:
+            name:
+              type: string
+              description: Name for the mapping.
+            source:
+              type: string
+              description: Source URL.
+            destination:
+              type: string
+              description: Destination URL.
+  tls:
+    type: array
+    description: TLS certificates.
