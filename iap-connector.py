@@ -28,7 +28,7 @@ def GenerateConfig(context):
       '-v1beta1-rbac-authorization': 'apis/rbac.authorization.k8s.io/v1beta1'
   }
 
-  resources = [{
+  cluster = {
       'name': cluster_name,
       'type': 'container.v1.cluster',
       'properties': {
@@ -39,6 +39,8 @@ def GenerateConfig(context):
               'initialNodeCount':
                   context.properties['initialNodeCount'],
               'nodeConfig': {
+                  'machineType': context.properties['machineType'],
+                  'preemptible': context.properties['preemptible'],
                   'oauthScopes': [
                       'https://www.googleapis.com/auth/' + s for s in [
                           'compute', 'devstorage.read_only', 'logging.write',
@@ -48,7 +50,14 @@ def GenerateConfig(context):
               }
           }
       }
-  }]
+  }
+
+  if context.properties['network'] is not None:
+      cluster['properties']['cluster']['network'] = context.properties['network']
+  if context.properties['subnetwork'] is not None:
+      cluster['properties']['cluster']['subnetwork'] = context.properties['subnetwork']
+
+  resources = [cluster]
 
   k8s_resource_types = []
   k8s_resource_types.append(service_type_name)

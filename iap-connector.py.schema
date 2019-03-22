@@ -42,10 +42,24 @@ properties:
     type: string
     description: Ambassador image version to run.
     default: 0.39.0
+  network:
+    type: string
+    description: Name of the network in which to run the cluster.
+  subnetwork:
+    type: string
+    description: Name of the subnetwork in which to run the cluster.
   replicas:
     type: integer
     description: Initial number of replica for ambassador deployment.
     default: 3
+  machineType:
+    type: string
+    description: The machine type to use for cluster nodes.
+    default: n1-standard-1
+  preemptible:
+    type: boolean
+    description: Whether or not to use preemptible VMs for the cluster.
+    default: false
   routing:
     type: array
     description: Routing maps
