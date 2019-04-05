@@ -28,7 +28,7 @@ def GenerateConfig(context):
       '-v1beta1-rbac-authorization': 'apis/rbac.authorization.k8s.io/v1beta1'
   }
 
-  cluster = {
+  resources = [{
       'name': cluster_name,
       'type': 'container.v1.cluster',
       'properties': {
@@ -36,6 +36,8 @@ def GenerateConfig(context):
           'cluster': {
               'name':
                   cluster_name,
+              'network': context.properties['network'],
+              'subnetwork': context.properties['subnetwork'],
               'initialNodeCount':
                   context.properties['initialNodeCount'],
               'nodeConfig': {
@@ -50,14 +52,7 @@ def GenerateConfig(context):
               }
           }
       }
-  }
-
-  if context.properties['network'] is not None:
-      cluster['properties']['cluster']['network'] = context.properties['network']
-  if context.properties['subnetwork'] is not None:
-      cluster['properties']['cluster']['subnetwork'] = context.properties['subnetwork']
-
-  resources = [cluster]
+  }]
 
   k8s_resource_types = []
   k8s_resource_types.append(service_type_name)

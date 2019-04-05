@@ -45,9 +45,11 @@ properties:
   network:
     type: string
     description: Name of the network in which to run the cluster.
+    default: default
   subnetwork:
     type: string
     description: Name of the subnetwork in which to run the cluster.
+    default: default
   replicas:
     type: integer
     description: Initial number of replica for ambassador deployment.
