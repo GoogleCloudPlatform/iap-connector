@@ -36,9 +36,13 @@ def GenerateConfig(context):
           'cluster': {
               'name':
                   cluster_name,
+              'network': context.properties['network'],
+              'subnetwork': context.properties['subnetwork'],
               'initialNodeCount':
                   context.properties['initialNodeCount'],
               'nodeConfig': {
+                  'machineType': context.properties['machineType'],
+                  'preemptible': context.properties['preemptible'],
                   'oauthScopes': [
                       'https://www.googleapis.com/auth/' + s for s in [
                           'compute', 'devstorage.read_only', 'logging.write',
