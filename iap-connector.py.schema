@@ -22,8 +22,6 @@ info:
 required:
 - zone
 - serviceAccountName
-- imageVersion
-- replicas
 - routing
 - tls
 
