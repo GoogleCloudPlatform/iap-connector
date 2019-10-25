@@ -1,0 +1,96 @@
+# Copyright 2019 Google LLC
+#
+# This software is provided as is, without warranty or representation for any
+# use or purpose. Your use of it is subject to your agreement with Google.
+
+info:
+  title: GKE cluster
+  author: Google, Inc.
+  description: |
+    Creates a IAP connector k8s cluster, with an ingress controller to forward
+    traffic to each service for routing.
+
+required:
+- zone
+- serviceAccountName
+- routing
+- tls
+
+properties:
+  zone:
+    type: string
+    description: Zone in which the cluster should run.
+  initialNodeCount:
+    type: integer
+    description: Initial number of nodes desired in the cluster.
+    default: 3
+  serviceAccountName:
+    type: string
+    description: Service account name in the project, which is used by deployment manger to create Kubernetes resources.
+  imageVersion:
+    type: string
+    description: Ambassador image version to run.
+    default: 0.39.0
+  network:
+    type: string
+    description: Name of the network in which to run the cluster.
+    default: default
+  subnetwork:
+    type: string
+    description: Name of the subnetwork in which to run the cluster.
+    default: default
+  useIpAliases:
+    type: string
+    description: Whether to use ip aliases. It is needed when using a Shared VPC
+    default: Falses
+  clusterSecondaryRangeName:
+    type: string
+    description: The name of the secondary range for the cluster (nodes) CIDR block. Only useful if useIpAliases is True.
+    default: ''
+  servicesSecondaryRangeName:
+    type: string
+    description: The name of the secondary range for the services CIDR block. Only useful if useIpAliases is True
+    default: ''
+  replicas:
+    type: integer
+    description: Initial number of replica for ambassador deployment.
+    default: 3
+  machineType:
+    type: string
+    description: The machine type to use for cluster nodes.
+    default: n1-standard-1
+  preemptible:
+    type: boolean
+    description: Whether or not to use preemptible VMs for the cluster.
+    default: false
+  routing:
+    type: array
+    description: Routing maps
+    items:
+      type: object
+      required:
+      - name
+      - mapping
+      properties:
+        name:
+          type: string
+          description: Name for the backend service.
+        mapping:
+          type: array
+          required:
+          - name
+          - source
+          - destination
+          properties:
+            name:
+              type: string
+              description: Name for the mapping.
+            source:
+              type: string
+              description: Source URL.
+            destination:
+              type: string
+              description: Destination URL.
+  tls:
+    type: array
+    description: TLS certificates.

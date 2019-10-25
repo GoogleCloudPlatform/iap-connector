@@ -1,0 +1,37 @@
+# Copyright 2019 Google LLC
+#
+# This software is provided as is, without warranty or representation for any
+# use or purpose. Your use of it is subject to your agreement with Google.
+
+imports:
+- path: iap-connector.py
+
+resources:
+- name: iap-connector
+  type: iap-connector.py
+  properties:
+    zone: <ZONE>
+    serviceAccountName: <PROJECT_NUMBER>@cloudservices.gserviceaccount.com
+    network: projects/<HOST PROJECT>/global/networks/<NETWORK NAME>
+    subnetwork: projects/<HOST PROJECT>/regions/<REGION>/subnetworks/<SUBNET>
+    useIpAliases: True
+    clusterSecondaryRangeName: <CLUSTER SECONDARY RANGE NAME>
+    servicesSecondaryRangeName: <SERVICES SECONDARY RANGE NAME>
+    routing:
+     - name: hr
+       mapping:
+        - name: host
+          source: www.hr-domain.com
+          destination: hr-internal.domain.com
+        - name: sub
+          source: sheets.hr-domain.com
+          destination: sheets.hr-internal.domain.com
+     - name: finance
+       mapping:
+        - name: host
+          source: www.finance-domain.com
+          destination: finance-internal.domain.com
+    tls:
+     - cert1
+     - cert2
+
