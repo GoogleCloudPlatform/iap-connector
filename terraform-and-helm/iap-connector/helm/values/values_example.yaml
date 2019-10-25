@@ -1,0 +1,118 @@
+# Default values for iap-connector.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+ambassadorInstances:
+  - ambassadorID: ambassador-1
+    replicaCount: 8
+    resources:
+      limits:
+        cpu: 1
+        memory: 400Mi
+      requests:
+        cpu: 200m
+        memory: 300Mi
+    image:
+      repository: quay.io/datawire/ambassador
+      tag: 0.39.0
+      pullPolicy: Always
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 16
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 70
+        - type: Resource
+          resource:
+            name: memory
+            targetAverageUtilization: 70
+
+  - ambassadorID: ambassador-2
+    replicaCount: 8
+    resources:
+      limits:
+        cpu: 1
+        memory: 400Mi
+      requests:
+        cpu: 200m
+        memory: 100Mi
+    image:
+      repository: quay.io/datawire/ambassador
+      tag: 0.39.0
+      pullPolicy: Always
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 16
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 70
+        - type: Resource
+          resource:
+            name: memory
+            targetAverageUtilization: 70
+
+ingresses:
+  - name: example-ingress
+    externalIpName: external-ip-name
+    certs:
+      - cert1
+      - cert2
+    enable_container_native_lb: true
+    routing:
+      - name: hr
+        ambassadorID: ambassador-1
+        optional_configurations:
+          timeout_ms: 3800000
+          connect_timeout_ms: 10000
+          retry_policy:
+            num_retries: 10
+            retry_on: 5xx
+        mapping:
+          - name: host
+            source: www.hr-domain.com
+            destination: hr-internal.domain.com
+      - name: finance
+        ambassadorID: ambassador-1
+        optional_configurations:
+          timeout_ms: 3800000
+          connect_timeout_ms: 10000
+          retry_policy:
+            num_retries: 10
+            retry_on: 5xx
+        mapping:
+          - name: host
+            source: www.finance-domain.com
+            destination: finance-internal.domain.com
+      - name: test1
+        ambassadorID: ambassador-2
+        optional_configurations:
+          timeout_ms: 3800000
+          connect_timeout_ms: 10000
+          retry_policy:
+            num_retries: 10
+            retry_on: 5xx
+        mapping:
+          - name: host
+            source: facebook.mydomain.com
+            destination: facebook.com
+      - name: test2
+        ambassadorID: ambassador-2
+        mapping:
+          - name: host
+            source: google.mydomain.com
+            destination: google.com
+
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ambassador

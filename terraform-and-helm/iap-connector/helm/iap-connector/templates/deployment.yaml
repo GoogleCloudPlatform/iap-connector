@@ -1,0 +1,59 @@
+{{- $fullName := include "iap-connector.fullname" . -}}
+{{- $name := include "iap-connector.name" . -}}
+{{- $labels := include "iap-connector.labels" . -}}
+{{- $releaseName := .Release.Name -}}
+{{- $serviceAccountName := include "iap-connector.serviceAccountName" . -}}
+{{- range $ai := .Values.ambassadorInstances }}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ $fullName }}-{{ $ai.ambassadorID }}
+  labels:
+    service: ambassador
+    id: {{ $ai.ambassadorID }}
+{{ $labels | indent 4 }}
+spec:
+  replicas: {{ $ai.replicaCount }}
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app.kubernetes.io/name: {{ $name }}
+        app.kubernetes.io/instance: {{ $releaseName }}
+        service: ambassador
+        id: {{ $ai.ambassadorID }}
+    spec:
+      serviceAccount: {{ $serviceAccountName }}
+      containers:
+      - name: ambassador
+        image: "{{ $ai.image.repository }}:{{ $ai.image.tag }}"
+        imagePullPolicy: {{ $ai.image.pullPolicy }}
+        ports:
+        - containerPort: 80
+        resources:
+          {{- toYaml $ai.resources | nindent 12 }}
+        env:
+        - name: STATSD_ENABLED
+          value: "true"
+        - name: AMBASSADOR_ID
+          value: {{ $ai.ambassadorID }}
+        - name: AMBASSADOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        livenessProbe:
+          httpGet:
+            path: /ambassador/v0/check_alive
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /ambassador/v0/check_ready
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 3
+      restartPolicy: Always
+{{- end }}

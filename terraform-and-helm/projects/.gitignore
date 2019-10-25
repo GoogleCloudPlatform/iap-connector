@@ -1,0 +1,8 @@
+**/.terraform
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/.terraform.tfstate.lock.info
+*.json
+
+# Terraform crash log
+**/crash.log
