@@ -1,0 +1,47 @@
+{{- $fullName := include "iap-connector.fullname" . -}}
+{{- $name := include "iap-connector.name" . -}}
+{{- $labels := include "iap-connector.labels" . -}}
+{{- $releaseName := .Release.Name -}}
+{{- range $ingress := .Values.ingresses }}
+{{- range $route := $ingress.routing }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}-{{ $route.name }}
+  labels:
+{{ $labels | indent 4 }}
+    service: ambassador
+  annotations:
+    {{- if $ingress.enable_container_native_lb }}
+    cloud.google.com/neg: '{"ingress": true}'
+    {{- end }}
+    getambassador.io/config: |
+      {{- range $mapping := $route.mapping }}
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      name: {{ $route.name }}{{ $mapping.name }}_mapping
+      ambassador_id: {{ $route.ambassadorID }}
+      prefix: /
+      host: {{ $mapping.source }}
+      service: https://{{ $mapping.destination }}:443
+      host_rewrite: {{ $mapping.destination }}
+      tls: True
+      {{- if $route.optional_configurations }}
+      {{- toYaml $route.optional_configurations | nindent 6}}
+      {{- end }}
+      {{- end }}
+spec:
+  type: NodePort
+  ports:
+    - name: {{ $route.name }}-http
+      targetPort: 80
+      port: 80
+  selector:
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ $releaseName }}
+    service: ambassador
+    id: {{ $route.ambassadorID }}
+{{- end }}
+{{- end }}
