@@ -8,4 +8,6 @@ responsibilities for the network team, the security team, and the operations tea
 Each directory in this folder was a repo.
 
 Customer specific information was removed from the code.
- 
+
+## Terraform version
+The Terraform code was written to be used with 0.11.13 version of Terraform. 
