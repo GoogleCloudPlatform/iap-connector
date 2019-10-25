@@ -1,0 +1,12 @@
+# Compiled files
+*.tfstate
+*.tfstate.backup
+.terraform
+.terraform*
+
+.DS_Store
+
+# repo-specific
+
+terraform-error*
+crash.log
