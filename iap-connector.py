@@ -23,7 +23,7 @@ def GenerateConfig(context):
   service_type_name = name_prefix + '-service-type'
   k8s_endpoints = {
       '': 'api/v1',
-      '-apps': 'apis/apps/v1beta1',
+      '-apps': 'apis/apps/v1',
       '-v1beta1-extensions': 'apis/extensions/v1beta1',
       '-v1beta1-rbac-authorization': 'apis/rbac.authorization.k8s.io/v1beta1'
   }
@@ -182,8 +182,8 @@ def GenerateConfig(context):
           ]),
       'Deployment':
           ''.join([
-              cluster_regular_type_root, '-v1beta1-extensions', ':',
-              '/apis/extensions/v1beta1/namespaces/{namespace}/deployments'
+              cluster_regular_type_root, '-apps', ':',
+              '/apis/apps/v1/namespaces/{namespace}/deployments'
           ]),
       'ClusterRole':
           ''.join([
@@ -278,16 +278,28 @@ def GenerateConfig(context):
           },
           'rules': [{
               'apiGroups': [''],
-              'resources': ['services'],
+              'resources': ['endpoints', 'namespaces', 'secrets', 'services'],
               'verbs': ['get', 'list', 'watch']
           }, {
-              'apiGroups': [''],
-              'resources': ['configmaps'],
-              'verbs': ['create', 'update', 'patch', 'get', 'list', 'watch']
-          }, {
-              'apiGroups': [''],
-              'resources': ['secrets'],
+              'apiGroups': ['getambassador.io'],
+              'resources': ['*'],
               'verbs': ['get', 'list', 'watch']
+          }, {
+              'apiGroups': ['apiextensions.k8s.io'],
+              'resources': ['customresourcedefinitions'],
+              'verbs': ['get', 'list', 'watch']
+          }, {
+              'apiGroups': ['networking.internal.knative.dev'],
+              'resources': ['ingresses/status', 'clusteringresses/status'],
+              'verbs': ['update']
+          }, {
+              'apiGroups': ['extensions'],
+              'resources': ['ingresses'],
+              'verbs': ['get', 'list', 'watch']
+          }, {
+              'apiGroups': ['extensions'],
+              'resources': ['ingresses/status'],
+              'verbs': ['update']
           }]
       }
   }, {
@@ -338,7 +350,7 @@ def GenerateConfig(context):
           'dependsOn': [name_prefix + '-rbac-admin-clusterrolebinding']
       },
       'properties': {
-          'apiVersion': 'extensions/v1beta1',
+          'apiVersion': 'apps/v1',
           'kind': 'Deployment',
           'namespace': 'default',
           'metadata': {
@@ -346,16 +358,32 @@ def GenerateConfig(context):
           },
           'spec': {
               'replicas': context.properties['replicas'],
+              'selector': {
+                   'matchLabels': {'service': 'ambassador'}
+              },
               'template': {
                   'metadata': {
                       'annotations': {
-                          'sidecar.istio.io/inject': 'false'
+                          'sidecar.istio.io/inject': 'false',
+                          'consul.hashicorp.com/connect-inject': 'false'
                       },
                       'labels': {
                           'service': 'ambassador'
                       }
                   },
                   'spec': {
+                      'affinity': {
+                          'podAntiAffinity': {
+                              'preferredDuringSchedulingIgnoredDuringExecution':
+                               [{'weight': 100,
+                                 'podAffinityTerm':
+                                     {'labelSelector':
+                                          {'matchLabels':
+                                               {'service': 'ambassador'}},
+                                      'topologyKey': 'kubernetes.io/hostname'}
+                                }]
+                          }
+                      },
                       'serviceAccountName':
                           'ambassador',
                       'containers': [{
@@ -364,7 +392,6 @@ def GenerateConfig(context):
                           'image':
                               'quay.io/datawire/ambassador:' +
                               context.properties['imageVersion'],
-                          'ports': [{'containerPort': 80}],
                           'resources': {
                               'limits': {
                                   'cpu': '1',
@@ -383,10 +410,15 @@ def GenerateConfig(context):
                                   }
                               },
                           }],
+                          'ports': [
+                              {'name': 'http', 'containerPort': 8080},
+                              {'name': 'https', 'containerPort': 8443},
+                              {'name': 'admin', 'containerPort': 8877}
+                          ],
                           'livenessProbe': {
                               'httpGet': {
                                   'path': '/ambassador/v0/check_alive',
-                                  'port': 80
+                                  'port': 8080
                               },
                               'initialDelaySeconds': 30,
                               'periodSeconds': 3,
@@ -394,13 +426,27 @@ def GenerateConfig(context):
                           'readinessProbe': {
                               'httpGet': {
                                   'path': '/ambassador/v0/check_ready',
-                                  'port': 80
+                                  'port': 8080
                               },
                               'initialDelaySeconds': 30,
                               'periodSeconds': 3,
+                          },
+                          'volumeMounts': [{
+                              'name': 'ambassador-pod-info',
+                              'mountPath': '/tmp/ambassador-pod-info'
+                          }]
+                      }],
+                      'volumes': [{
+                          'name': 'ambassador-pod-info',
+                          'downwardAPI': {
+                              'items': [{
+                                  'path': 'labels',
+                                  'fieldRef': {'fieldPath': 'metadata.labels'}
+                              }]
                           }
                       }],
                       'restartPolicy': 'Always',
+                      'securityContext': {'runAsUser': 8888}
                   },
               }
           }
@@ -408,7 +454,7 @@ def GenerateConfig(context):
   }])
 
   ambassador_config_template = ('---\n'
-                                'apiVersion: ambassador/v0\n'
+                                'apiVersion: ambassador/v1\n'
                                 'kind: Mapping\n'
                                 'name: {0}_mapping\n'
                                 'prefix: /\n'
@@ -463,7 +509,7 @@ def GenerateConfig(context):
                 'ports': [{
                     'name': routing_obj['name'] + '-http',
                     'port': 80,
-                    'targetPort': 80,
+                    'targetPort': 8080,
                 }],
                 'selector': {
                     'service': 'ambassador',

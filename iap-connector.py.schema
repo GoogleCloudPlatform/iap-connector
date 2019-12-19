@@ -39,7 +39,7 @@ properties:
   imageVersion:
     type: string
     description: Ambassador image version to run.
-    default: 0.39.0
+    default: 0.86.1
   network:
     type: string
     description: Name of the network in which to run the cluster.
