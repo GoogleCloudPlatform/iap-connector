@@ -48,28 +48,6 @@ resource "google_container_cluster" "private-gke" {
 
   initial_node_count = 1
 
-  node_config {
-    service_account = "${google_service_account.gke_node.email}"
-
-    #service_account = "serviceAccount:${google_service_account.gke_node.email}"
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/compute",
-      "https://www.googleapis.com/auth/devstorage.read_write",
-      "https://www.googleapis.com/auth/projecthosting",
-      "https://www.googleapis.com/auth/logging.write",
-      "https://www.googleapis.com/auth/monitoring",
-    ]
-
-    metadata {
-      disable-legacy-endpoints = "true"
-    }
-
-    machine_type = "${var.gke_nodes_machine_type}"
-    disk_type    = "${var.gke_nodes_disk_type}"
-    disk_size_gb = "${var.gke_nodes_disk_size_gb}"
-    tags         = "${var.gke_node_tags}"
-  }
-
   addons_config {
     horizontal_pod_autoscaling {
       disabled = "${var.disable_horizontal_pod_autoscaling}"
