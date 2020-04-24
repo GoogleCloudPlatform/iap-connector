@@ -24,29 +24,66 @@ def GenerateConfig(context):
 
   resources = [{
       'name': cluster_name,
-      'type': 'container.v1.cluster',
+      'type': 'gcp-types/container-v1beta1:projects.zones.clusters',
       'properties': {
           'zone': context.properties['zone'],
           'cluster': {
-              'name':
-                  cluster_name,
+              'name': cluster_name,
               'network': context.properties['network'],
               'subnetwork': context.properties['subnetwork'],
-              'initialNodeCount':
-                  context.properties['initialNodeCount'],
-              'nodeConfig': {
-                  'machineType': context.properties['machineType'],
-                  'preemptible': context.properties['preemptible'],
-                  'oauthScopes': [
-                      'https://www.googleapis.com/auth/' + s for s in [
-                          'compute', 'devstorage.read_only', 'logging.write',
-                          'monitoring'
-                      ]
-                  ]
-              }
-          }
+              'nodePools': [{
+                  'name': 'default-pool',
+                  'config': {
+                      'machineType':
+                          context.properties['machineType'],
+                      'oauthScopes': [
+                          'https://www.googleapis.com/auth/' + s for s in [
+                              'compute', 'devstorage.read_only',
+                              'logging.write', 'monitoring'
+                          ]
+                      ],
+                  },
+                  'initialNodeCount': context.properties['initialNodeCount'],
+                  'management': {
+                      'autoUpgrade': True,
+                      'autoRepair': True
+                  },
+              }],
+              'privateClusterConfig': {
+                  'enablePrivateNodes': True,
+                  'masterIpv4CidrBlock': '172.16.0.0/28'
+              },
+              'shieldedNodes': {
+                  'enabled': True
+              },
+              'ipAllocationPolicy': {
+                  'useIpAliases': True
+              },
+              'releaseChannel': {
+                  'channel': 'REGULAR'
+              },
+          },
       }
   }]
+
+  resources.append({
+      'name': name_prefix + '-cloud-router',
+      'type': 'compute.v1.routers',
+      'properties': {
+          'region':
+              context.properties['zone'][:-2],
+          'network':
+              'global/networks/' + context.properties['network'],
+          'nats': [{
+              'name': name_prefix + '-nat-config',
+              'natIpAllocateOption': 'AUTO_ONLY',
+              'sourceSubnetworkIpRangesToNat': 'ALL_SUBNETWORKS_ALL_IP_RANGES',
+              'logConfig': {
+                  'enable': True
+              },
+          }]
+      }
+  })
 
   k8s_resource_types = []
   k8s_resource_types.append(service_type_name)
