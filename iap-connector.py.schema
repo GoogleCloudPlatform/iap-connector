@@ -56,10 +56,6 @@ properties:
     type: string
     description: The machine type to use for cluster nodes.
     default: n1-standard-1
-  preemptible:
-    type: boolean
-    description: Whether or not to use preemptible VMs for the cluster.
-    default: false
   routing:
     type: array
     description: Routing maps
