@@ -4,7 +4,7 @@
 
 ambassadorInstances:
   - ambassadorID: ambassador-1
-    replicaCount: 8
+    replicaCount: 3
     resources:
       limits:
         cpu: 1
@@ -14,7 +14,7 @@ ambassadorInstances:
         memory: 300Mi
     image:
       repository: quay.io/datawire/ambassador
-      tag: 0.39.0
+      tag: 1.4.2
       pullPolicy: Always
     autoscaling:
       enabled: true
@@ -41,7 +41,7 @@ ambassadorInstances:
         memory: 100Mi
     image:
       repository: quay.io/datawire/ambassador
-      tag: 0.39.0
+      tag: 1.4.2
       pullPolicy: Always
     autoscaling:
       enabled: true
