@@ -36,7 +36,7 @@ spec:
   type: NodePort
   ports:
     - name: {{ $route.name }}-http
-      targetPort: 80
+      targetPort: 8080
       port: 80
   selector:
     app.kubernetes.io/name: {{ $name }}
