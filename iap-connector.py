@@ -107,7 +107,7 @@ def GenerateConfig(context):
               'inputMappings': [{
                   'fieldName': 'name',
                   'location': 'PATH',
-                  'methodMatch': '^(GET|DELETE|PUT)$',
+                  'methodMatch': '^(GET|DELETE|POST|PUT)$',
                   'value': '$.ifNull('
                            '$.resource.properties.metadata.name, '
                            '$.resource.name)'
@@ -166,7 +166,7 @@ def GenerateConfig(context):
               'inputMappings': [{
                   'fieldName': 'name',
                   'location': 'PATH',
-                  'methodMatch': '^(GET|DELETE|PUT)$',
+                  'methodMatch': '^(GET|DELETE|POST|PUT)$',
                   'value': '$.ifNull('
                            '$.resource.properties.metadata.name, '
                            '$.resource.name)'
