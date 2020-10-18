@@ -11,7 +11,7 @@ resources:
   type: iap-connector.py
   properties:
     zone: <ZONE>
-    serviceAccountName: <PROJECT_NUMBER>@cloudservices.gserviceaccount.com
+    serviceAccountName: 651519640402@cloudservices.gserviceaccount.com
     network: projects/<HOST PROJECT>/global/networks/<NETWORK NAME>
     subnetwork: projects/<HOST PROJECT>/regions/<REGION>/subnetworks/<SUBNET>
     useIpAliases: True
