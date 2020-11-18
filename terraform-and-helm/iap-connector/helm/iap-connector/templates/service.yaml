@@ -2,6 +2,7 @@
 {{- $name := include "iap-connector.name" . -}}
 {{- $labels := include "iap-connector.labels" . -}}
 {{- $releaseName := .Release.Name -}}
+{{- $urlRegex := "(http|https)\\:\\/\\/([^:\\/\\n]+)(:\\d+)?(\\/\\S*)?" -}}
 {{- range $ingress := .Values.ingresses }}
 {{- range $route := $ingress.routing }}
 ---
@@ -25,8 +26,8 @@ metadata:
       ambassador_id: {{ $route.ambassadorID }}
       prefix: /
       host: {{ $mapping.source }}
-      service: https://{{ $mapping.destination }}:443
-      host_rewrite: {{ $mapping.destination }}
+      service: {{ regexReplaceAll $urlRegex .destination "${1}" }}://{{ regexReplaceAll $urlRegex .destination "${2}" }}{{ regexReplaceAll $urlRegex .destination "${3}" }}
+      host_rewrite: {{ regexReplaceAll $urlRegex .destination "${2}" }}
       tls: True
       {{- if $route.optional_configurations }}
       {{- toYaml $route.optional_configurations | nindent 6}}
