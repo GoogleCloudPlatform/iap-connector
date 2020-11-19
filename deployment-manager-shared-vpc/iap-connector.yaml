@@ -12,8 +12,8 @@ resources:
   properties:
     zone: <ZONE>
     serviceAccountName: <PROJECT_NUMBER>@cloudservices.gserviceaccount.com
-    network: projects/<HOST PROJECT>/global/networks/<NETWORK NAME>
-    subnetwork: projects/<HOST PROJECT>/regions/<REGION>/subnetworks/<SUBNET>
+    network: <NETWORK NAME>
+    subnetwork: <SUBNET NAME>
     useIpAliases: True
     clusterSecondaryRangeName: <CLUSTER SECONDARY RANGE NAME>
     servicesSecondaryRangeName: <SERVICES SECONDARY RANGE NAME>
